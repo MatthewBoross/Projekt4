@@ -13,3 +13,5 @@ C:\Users\Matth\OneDrive\Asztali gép\School Stuff\Komplex Programozás\4. projek
 C:\Users\Matth\OneDrive\Asztali gép\School Stuff\Komplex Programozás\4. projekt\AudioPlayer\AudioPlayer\obj\Debug\AudioPlayer.csproj.CoreCompileInputs.cache
 C:\Users\Matth\OneDrive\Asztali gép\School Stuff\Komplex Programozás\4. projekt\AudioPlayer\AudioPlayer\obj\Debug\AudioPlayer.exe
 C:\Users\Matth\OneDrive\Asztali gép\School Stuff\Komplex Programozás\4. projekt\AudioPlayer\AudioPlayer\obj\Debug\AudioPlayer.pdb
+C:\Users\Matth\OneDrive\Asztali gép\School Stuff\Komplex Programozás\4. projekt\AudioPlayer\AudioPlayer\obj\Debug\Info.g.cs
+C:\Users\Matth\OneDrive\Asztali gép\School Stuff\Komplex Programozás\4. projekt\AudioPlayer\AudioPlayer\obj\Debug\Info.baml
