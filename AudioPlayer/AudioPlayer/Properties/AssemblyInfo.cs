@@ -7,11 +7,11 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AudioPlayer")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Audio Player")]
+[assembly: AssemblyDescription("Audio Player, a simple and intuitive music player created for educational and leisure use.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AudioPlayer")]
+[assembly: AssemblyCompany("SuperOriginalProductions")]
+[assembly: AssemblyProduct("Audio Player version 1.0.0.0")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -53,3 +53,4 @@ using System.Windows;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: NeutralResourcesLanguage("en-150")]
