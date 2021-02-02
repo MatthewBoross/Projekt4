@@ -18,7 +18,6 @@ namespace AudioPlayer
         int isPlaying = 0;
         int playing = -1;
         int repeatType = 0;
-        int openError = 0;
 
         class Error : Exception
         {
@@ -48,19 +47,10 @@ namespace AudioPlayer
                 {
                     if (SongsListBox.SelectedIndex != -1)
                     {
-                        string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
-                        mediaPlayer.Open(new Uri(file));
-                        mediaPlayer.MediaOpened += (o, args) =>
+                        try
                         {
-                            openError = 0;
-                        };
-                        mediaPlayer.MediaFailed += (o, args) =>
-                        {
-                            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                            openError = 1;
-                        };
-                        if (openError == 0)
-                        {
+                            string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
+                            mediaPlayer.Open(new Uri(file));
                             mediaPlayer.Play();
                             isPlaying = 2;
                             playing = Convert.ToInt32(SongsListBox.SelectedIndex);
@@ -70,6 +60,11 @@ namespace AudioPlayer
                             PositionSlider.IsEnabled = true;
                             PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
                             StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                            mediaPlayer.MediaFailed += Media_Failed;
+                        }
+                        catch
+                        {
+
                         }
                     }
                     else
@@ -79,27 +74,16 @@ namespace AudioPlayer
                             SongsListBox.SelectedIndex = 0;
                             string file = SongsListBox.Items[0].ToString();
                             mediaPlayer.Open(new Uri(file));
-                            mediaPlayer.MediaOpened += (o, args) =>
-                            {
-                                openError = 0;
-                            };
-                            mediaPlayer.MediaFailed += (o, args) =>
-                            {
-                                MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                                openError = 1;
-                            };
-                            if (openError == 0)
-                            {
-                                mediaPlayer.Play();
-                                isPlaying = 2;
-                                playing = 0;
-                                timer.Interval = TimeSpan.FromSeconds(1);
-                                timer.Tick += Timer_Tick;
-                                timer.Start();
-                                PositionSlider.IsEnabled = true;
-                                PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
-                                StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
-                            }
+                            mediaPlayer.Play();
+                            isPlaying = 2;
+                            playing = 0;
+                            timer.Interval = TimeSpan.FromSeconds(1);
+                            timer.Tick += Timer_Tick;
+                            timer.Start();
+                            PositionSlider.IsEnabled = true;
+                            PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
+                            StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                            mediaPlayer.MediaFailed += Media_Failed;
                         }
                         catch
                         {
@@ -129,7 +113,6 @@ namespace AudioPlayer
             timer.Stop();
             isPlaying = 0;
             playing = -1;
-            openError = 0;
             PositionSlider.Value = 0;
             PositionSlider.Maximum = 1;
             PositionSlider.IsEnabled = false;
@@ -144,22 +127,13 @@ namespace AudioPlayer
             {
                 if (SongsListBox.Items.Count != 0)
                 {
-                    if (SongsListBox.SelectedIndex == -1)
+                    if (mediaPlayer.Position.TotalSeconds > 3)
                     {
-                        SongsListBox.SelectedIndex = 0;
-                        string file = SongsListBox.Items[0].ToString();
-                        mediaPlayer.Open(new Uri(file));
-                        mediaPlayer.MediaOpened += (o, args) =>
+                        if (playing == -1)
                         {
-                            openError = 0;
-                        };
-                        mediaPlayer.MediaFailed += (o, args) =>
-                        {
-                            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                            openError = 1;
-                        };
-                        if (openError == 0)
-                        {
+                            SongsListBox.SelectedIndex = 0;
+                            string file = SongsListBox.Items[0].ToString();
+                            mediaPlayer.Open(new Uri(file));
                             mediaPlayer.Play();
                             isPlaying = 2;
                             playing = 0;
@@ -169,24 +143,42 @@ namespace AudioPlayer
                             PositionSlider.IsEnabled = true;
                             PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
                             StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                            mediaPlayer.MediaFailed += Media_Failed;
+                        }
+                        else
+                        {
+                            mediaPlayer.Position = TimeSpan.FromSeconds(0);
+                            timer.Interval = TimeSpan.FromSeconds(1);
+                            timer.Tick += Timer_Tick;
+                            timer.Start();
+                            PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
+                            StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
                         }
                     }
                     else
                     {
-                        SongsListBox.SelectedIndex = playing;
-                        string file = SongsListBox.Items[playing].ToString();
-                        mediaPlayer.Open(new Uri(file));
-                        mediaPlayer.MediaOpened += (o, args) =>
+                        if (playing == 0 || playing == -1)
                         {
-                            openError = 0;
-                        };
-                        mediaPlayer.MediaFailed += (o, args) =>
+                            SongsListBox.SelectedIndex = 0;
+                            string file = SongsListBox.Items[0].ToString();
+                            mediaPlayer.Open(new Uri(file));
+                            mediaPlayer.Play();
+                            isPlaying = 2;
+                            playing = 0;
+                            timer.Interval = TimeSpan.FromSeconds(1);
+                            timer.Tick += Timer_Tick;
+                            timer.Start();
+                            PositionSlider.IsEnabled = true;
+                            PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
+                            StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                            mediaPlayer.MediaFailed += Media_Failed;
+                        }
+                        else
                         {
-                            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                            openError = 1;
-                        };
-                        if (openError == 0)
-                        {
+                            playing--;
+                            SongsListBox.SelectedIndex = playing;
+                            string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
+                            mediaPlayer.Open(new Uri(file));
                             mediaPlayer.Play();
                             isPlaying = 2;
                             timer.Interval = TimeSpan.FromSeconds(1);
@@ -195,6 +187,7 @@ namespace AudioPlayer
                             PositionSlider.IsEnabled = true;
                             PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
                             StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                            mediaPlayer.MediaFailed += Media_Failed;
                         }
                     }
                 }
@@ -205,152 +198,49 @@ namespace AudioPlayer
             }
         }
 
-        private void PrevButton_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (SongsListBox.Items.Count != 0)
-            {
-                if (playing == 0 || playing == -1)
-                {
-                    try
-                    {
-                        SongsListBox.SelectedIndex = 0;
-                        string file = SongsListBox.Items[0].ToString();
-                        mediaPlayer.Open(new Uri(file));
-                        mediaPlayer.MediaOpened += (o, args) =>
-                        {
-                            openError = 0;
-                        };
-                        mediaPlayer.MediaFailed += (o, args) =>
-                        {
-                            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                            openError = 1;
-                        };
-                        if (openError == 0)
-                        {
-                            mediaPlayer.Play();
-                            isPlaying = 2;
-                            playing = 0;
-                            timer.Interval = TimeSpan.FromSeconds(1);
-                            timer.Tick += Timer_Tick;
-                            timer.Start();
-                            PositionSlider.IsEnabled = true;
-                            PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
-                            StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
-                        }
-                    }
-                    catch
-                    {
-
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        playing--;
-                        SongsListBox.SelectedIndex = playing;
-                        string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
-                        mediaPlayer.Open(new Uri(file));
-                        mediaPlayer.MediaOpened += (o, args) =>
-                        {
-                            openError = 0;
-                        };
-                        mediaPlayer.MediaFailed += (o, args) =>
-                        {
-                            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                            openError = 1;
-                        };
-                        if (openError == 0)
-                        {
-                            mediaPlayer.Play();
-                            isPlaying = 2;
-                            timer.Interval = TimeSpan.FromSeconds(1);
-                            timer.Tick += Timer_Tick;
-                            timer.Start();
-                            PositionSlider.IsEnabled = true;
-                            PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
-                            StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
-                        }
-                    }
-                    catch
-                    {
-
-                    }
-                }
-            }
-        }
-
         private void NextButton_Click(object sender, RoutedEventArgs e)
         {
             if (SongsListBox.Items.Count != 0)
             {
-                if (SongsListBox.SelectedIndex != SongsListBox.Items.Count - 1)
+                try
                 {
-                    try
+                    if (SongsListBox.SelectedIndex != SongsListBox.Items.Count - 1)
                     {
+
                         playing++;
                         SongsListBox.SelectedIndex = playing;
                         string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
                         mediaPlayer.Open(new Uri(file));
-                        mediaPlayer.MediaOpened += (o, args) =>
-                        {
-                            openError = 0;
-                        };
-                        mediaPlayer.MediaFailed += (o, args) =>
-                        {
-                            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                            openError = 1;
-                        };
-                        if (openError == 0)
-                        {
-                            mediaPlayer.Play();
-                            isPlaying = 2;
-                            timer.Interval = TimeSpan.FromSeconds(1);
-                            timer.Tick += Timer_Tick;
-                            timer.Start();
-                            PositionSlider.IsEnabled = true;
-                            PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
-                            StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
-                        }
+                        mediaPlayer.Play();
+                        isPlaying = 2;
+                        timer.Interval = TimeSpan.FromSeconds(1);
+                        timer.Tick += Timer_Tick;
+                        timer.Start();
+                        PositionSlider.IsEnabled = true;
+                        PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
+                        StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                        mediaPlayer.MediaFailed += Media_Failed;
                     }
-                    catch
-                    {
-
-                    }
-                }
-                else
-                {
-                    try
+                    else
                     {
                         SongsListBox.SelectedIndex = 0;
                         string file = SongsListBox.Items[0].ToString();
                         mediaPlayer.Open(new Uri(file));
-                        mediaPlayer.MediaOpened += (o, args) =>
-                        {
-                            openError = 0;
-                        };
-                        mediaPlayer.MediaFailed += (o, args) =>
-                        {
-                            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                            openError = 1;
-                        };
-                        if (openError == 0)
-                        {
-                            mediaPlayer.Play();
-                            isPlaying = 2;
-                            playing = 0;
-                            timer.Interval = TimeSpan.FromSeconds(1);
-                            timer.Tick += Timer_Tick;
-                            timer.Start();
-                            PositionSlider.IsEnabled = true;
-                            PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
-                            StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
-                        }
+                        mediaPlayer.Play();
+                        isPlaying = 2;
+                        playing = 0;
+                        timer.Interval = TimeSpan.FromSeconds(1);
+                        timer.Tick += Timer_Tick;
+                        timer.Start();
+                        PositionSlider.IsEnabled = true;
+                        PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
+                        StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                        mediaPlayer.MediaFailed += Media_Failed;
                     }
-                    catch
-                    {
+                }
+                catch
+                {
 
-                    }
                 }
             }
         }
@@ -411,27 +301,16 @@ namespace AudioPlayer
             {
                 string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
                 mediaPlayer.Open(new Uri(file));
-                mediaPlayer.MediaOpened += (o, args) =>
-                {
-                    openError = 0;
-                };
-                mediaPlayer.MediaFailed += (o, args) =>
-                {
-                    MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                    openError = 1;
-                };
-                if (openError == 0)
-                {
-                    mediaPlayer.Play();
-                    isPlaying = 2;
-                    playing = Convert.ToInt32(SongsListBox.SelectedIndex);
-                    timer.Interval = TimeSpan.FromSeconds(1);
-                    timer.Tick += Timer_Tick;
-                    timer.Start();
-                    PositionSlider.IsEnabled = true;
-                    PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
-                    StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
-                }
+                mediaPlayer.Play();
+                isPlaying = 2;
+                playing = Convert.ToInt32(SongsListBox.SelectedIndex);
+                timer.Interval = TimeSpan.FromSeconds(1);
+                timer.Tick += Timer_Tick;
+                timer.Start();
+                PositionSlider.IsEnabled = true;
+                PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
+                StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                mediaPlayer.MediaFailed += Media_Failed;
             }
             catch
             {
@@ -556,14 +435,11 @@ namespace AudioPlayer
                     sw.Close();
                     MessageBox.Show("Your playlist has been successfully saved.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-                catch (System.ArgumentException)
+                catch
                 {
 
                 }
-                catch (System.IO.IOException)
-                {
 
-                }
             }
         }
 
@@ -618,7 +494,7 @@ namespace AudioPlayer
             {
                 MessageBox.Show("An unexpected error occured. Please check that the loaded file was made with this application, then try again.", "Fatal error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            catch (System.ArgumentException)
+            catch
             {
 
             }
@@ -644,25 +520,16 @@ namespace AudioPlayer
 
         private void Media_Ended(object sender, EventArgs e)
         {
-            if (repeatType == 0 && openError == 0)
+            try
             {
-                if (playing < (SongsListBox.Items.Count - 1))
+                if (repeatType == 0)
                 {
-                    playing++;
-                    SongsListBox.SelectedIndex = playing;
-                    string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
-                    mediaPlayer.Open(new Uri(file));
-                    mediaPlayer.MediaOpened += (o, args) =>
+                    if (playing < (SongsListBox.Items.Count - 1))
                     {
-                        openError = 0;
-                    };
-                    mediaPlayer.MediaFailed += (o, args) =>
-                    {
-                        MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                        openError = 1;
-                    };
-                    if (openError == 0)
-                    {
+                        playing++;
+                        SongsListBox.SelectedIndex = playing;
+                        string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
+                        mediaPlayer.Open(new Uri(file));
                         mediaPlayer.Play();
                         isPlaying = 2;
                         timer.Interval = TimeSpan.FromSeconds(1);
@@ -671,42 +538,31 @@ namespace AudioPlayer
                         PositionSlider.IsEnabled = true;
                         PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
                         StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                        mediaPlayer.MediaFailed += Media_Failed;
+                    }
+                    else
+                    {
+                        SongsListBox.SelectedIndex = -1;
+                        mediaPlayer.Close();
+                        timer.Stop();
+                        isPlaying = 0;
+                        playing = -1;
+                        PositionSlider.Value = 0;
+                        PositionSlider.Maximum = 1;
+                        PositionSlider.IsEnabled = false;
+                        PositionLabel.Content = "00:00/00:00";
+                        PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF12B900");
+                        StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF590000");
                     }
                 }
-                else
+                else if (repeatType == 1)
                 {
-                    SongsListBox.SelectedIndex = -1;
-                    mediaPlayer.Close();
-                    timer.Stop();
-                    isPlaying = 0;
-                    playing = -1;
-                    PositionSlider.Value = 0;
-                    PositionSlider.Maximum = 1;
-                    PositionSlider.IsEnabled = false;
-                    PositionLabel.Content = "00:00/00:00";
-                    PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF12B900");
-                    StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF590000");
-                }
-            }
-            else if (repeatType == 1 && openError == 0)
-            {
-                if (playing < (SongsListBox.Items.Count - 1))
-                {
-                    playing++;
-                    SongsListBox.SelectedIndex = playing;
-                    string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
-                    mediaPlayer.Open(new Uri(file));
-                    mediaPlayer.MediaOpened += (o, args) =>
+                    if (playing < (SongsListBox.Items.Count - 1))
                     {
-                        openError = 0;
-                    };
-                    mediaPlayer.MediaFailed += (o, args) =>
-                    {
-                        MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                        openError = 1;
-                    };
-                    if (openError == 0)
-                    {
+                        playing++;
+                        SongsListBox.SelectedIndex = playing;
+                        string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
+                        mediaPlayer.Open(new Uri(file));
                         mediaPlayer.Play();
                         isPlaying = 2;
                         timer.Interval = TimeSpan.FromSeconds(1);
@@ -715,25 +571,14 @@ namespace AudioPlayer
                         PositionSlider.IsEnabled = true;
                         PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
                         StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                        mediaPlayer.MediaFailed += Media_Failed;
                     }
-                }
-                else
-                {
-                    playing = 0;
-                    SongsListBox.SelectedIndex = playing;
-                    string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
-                    mediaPlayer.Open(new Uri(file));
-                    mediaPlayer.MediaOpened += (o, args) =>
+                    else
                     {
-                        openError = 0;
-                    };
-                    mediaPlayer.MediaFailed += (o, args) =>
-                    {
-                        MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
-                        openError = 1;
-                    };
-                    if (openError == 0)
-                    {
+                        playing = 0;
+                        SongsListBox.SelectedIndex = playing;
+                        string file = SongsListBox.Items[SongsListBox.SelectedIndex].ToString();
+                        mediaPlayer.Open(new Uri(file));
                         mediaPlayer.Play();
                         isPlaying = 2;
                         timer.Interval = TimeSpan.FromSeconds(1);
@@ -742,18 +587,39 @@ namespace AudioPlayer
                         PositionSlider.IsEnabled = true;
                         PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
                         StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                        mediaPlayer.MediaFailed += Media_Failed;
                     }
                 }
+                else if (repeatType == 2)
+                {
+                    mediaPlayer.Position = TimeSpan.FromSeconds(0);
+                    timer.Interval = TimeSpan.FromSeconds(1);
+                    timer.Tick += Timer_Tick;
+                    timer.Start();
+                    PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
+                    StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+                }
             }
-            else if (repeatType == 2 && openError == 0)
+            catch
             {
-                mediaPlayer.Position = TimeSpan.FromSeconds(0);
-                timer.Interval = TimeSpan.FromSeconds(1);
-                timer.Tick += Timer_Tick;
-                timer.Start();
-                PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
-                StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+
             }
+        }
+
+        private void Media_Failed(object sender, EventArgs e)
+        {
+            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+            SongsListBox.SelectedIndex = -1;
+            mediaPlayer.Close();
+            timer.Stop();
+            isPlaying = 0;
+            playing = -1;
+            PositionSlider.Value = 0;
+            PositionSlider.Maximum = 1;
+            PositionSlider.IsEnabled = false;
+            PositionLabel.Content = "00:00/00:00";
+            PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF12B900");
+            StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF590000");
         }
     }
 }
