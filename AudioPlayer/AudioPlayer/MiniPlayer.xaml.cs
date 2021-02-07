@@ -1,6 +1,4 @@
-﻿using Microsoft.Win32;
-using System;
-using System.IO;
+﻿using System;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -69,6 +67,9 @@ namespace AudioPlayer
             mw.PositionLabel.Content = PositionLabel.Content;
             mw.VolumeSlider.Value = VolumeSlider.Value;
             mw.VolumeLabel.Content = VolumeLabel.Content;
+            mw.mediaPlayer.Volume = VolumeSlider.Value;
+            mw.mediaPlayer.Balance = mediaPlayer.Balance;
+            mw.BalanceSlider.Value = mediaPlayer.Balance;
             mw.PlayPauseButton.Background = PlayPauseButton.Background;
             mw.StopButton.Background = StopButton.Background;
             mw.RepeatButton.Background = RepeatButton.Background;
@@ -108,7 +109,6 @@ namespace AudioPlayer
                     mw.mediaPlayer.Pause();
                 }
                 mw.mediaPlayer.Position = mediaPlayer.Position;
-                mw.mediaPlayer.Volume = mediaPlayer.Volume;
             }
             catch
             {
@@ -276,6 +276,10 @@ namespace AudioPlayer
         {
             positionSliderIsMoving = 0;
             mediaPlayer.Position = TimeSpan.FromSeconds(PositionSlider.Value);
+            if (PositionSlider.Value == PositionSlider.Maximum)
+            {
+                MediaEnd();
+            }
         }
 
         private void PositionSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -316,80 +320,88 @@ namespace AudioPlayer
 
         private void Media_Ended(object sender, EventArgs e)
         {
-            try
-            {
-                if (repeatType != 2)
-                {
-                    if (shuffle == 0)
-                    {
-                        if (repeatType == 0)
-                        {
-                            if (playing < (SongsListBox.Items.Count - 1))
-                            {
-                                Next_Song();
-                                Start();
-                            }
-                            else
-                            {
-                                Stop();
-                            }
-                        }
-                        else if (repeatType == 1)
-                        {
-                            if (playing < (SongsListBox.Items.Count - 1))
-                            {
-                                Next_Song();
-                                Start();
-                            }
-                            else
-                            {
-                                First_Index();
-                                Start();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (SongsListBox.Items.Count == 1)
-                        {
-                            Start_Again();
-                        }
-                        else
-                        {
-                            do
-                            {
-                                shuffleSelection = r.Next(0, SongsListBox.Items.Count);
-                                if (shuffleSelection != playing)
-                                {
-                                    shuffleFound = 1;
-                                    playing = shuffleSelection;
-                                    SongsListBox.SelectedIndex = playing;
-                                    mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
-                                    Start();
-                                }
-                                else
-                                {
-                                    shuffleFound = 0;
-                                }
-                            } while (shuffleFound == 0);
-                        }
-                    }
-                }
-                else
-                {
-                    Start_Again();
-                }
-            }
-            catch
-            {
-
-            }
+            MediaEnd();
         }
 
         private void Media_Failed(object sender, EventArgs e)
         {
             MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
             Stop();
+        }
+
+        private void MediaEnd()
+        {
+            try
+            {
+                if (positionSliderIsMoving == 0)
+                {
+                    if (repeatType != 2)
+                    {
+                        if (shuffle == 0)
+                        {
+                            if (repeatType == 0)
+                            {
+                                if (playing < (SongsListBox.Items.Count - 1))
+                                {
+                                    Next_Song();
+                                    Start();
+                                }
+                                else
+                                {
+                                    Stop();
+                                }
+                            }
+                            else if (repeatType == 1)
+                            {
+                                if (playing < (SongsListBox.Items.Count - 1))
+                                {
+                                    Next_Song();
+                                    Start();
+                                }
+                                else
+                                {
+                                    First_Index();
+                                    Start();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (SongsListBox.Items.Count == 1)
+                            {
+                                Start_Again();
+                            }
+                            else
+                            {
+                                do
+                                {
+                                    shuffleSelection = r.Next(0, SongsListBox.Items.Count);
+                                    if (shuffleSelection != playing)
+                                    {
+                                        shuffleFound = 1;
+                                        playing = shuffleSelection;
+                                        SongsListBox.SelectedIndex = playing;
+                                        mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
+                                        Start();
+                                    }
+                                    else
+                                    {
+                                        shuffleFound = 0;
+                                    }
+                                } while (shuffleFound == 0);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Start_Again();
+                    }
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         private void Selected_Index()
@@ -415,6 +427,7 @@ namespace AudioPlayer
             PositionSlider.IsEnabled = true;
             PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
             StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+            mediaPlayer.Volume = VolumeSlider.Value;
             mediaPlayer.MediaFailed += Media_Failed;
         }
 
@@ -436,8 +449,11 @@ namespace AudioPlayer
         private void Start_Again()
         {
             mediaPlayer.Position = TimeSpan.FromSeconds(0);
-            PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
-            StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+            if (isPlaying != 1)
+            {
+                PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF82EE76");
+                StopButton.Background = (Brush)new BrushConverter().ConvertFrom("#FFB91414");
+            }
         }
 
         private void Next_Song()
