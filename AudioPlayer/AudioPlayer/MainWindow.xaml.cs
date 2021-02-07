@@ -42,7 +42,6 @@ namespace AudioPlayer
         private void MiniPlayerButton_Click(object sender, RoutedEventArgs e)
         {
             MiniPlayer mp = new MiniPlayer();
-            mp.Show();
             for (int i = 0; i < SongsListBox.Items.Count; i++)
             {
                 mp.SongsListBox.Items.Add(SongsListBox.Items[i]);
@@ -71,6 +70,7 @@ namespace AudioPlayer
             try
             {
                 mp.mediaPlayer.Open(new Uri(SongsListBox.Items[playing].ToString()));
+                mp.Show();
                 if (mp.isPlaying == 2)
                 {
                     mp.mediaPlayer.Play();
@@ -83,7 +83,7 @@ namespace AudioPlayer
             }
             catch
             {
-
+                mp.Show();
             }
             mediaPlayer.Close();
             Close();
@@ -132,41 +132,51 @@ namespace AudioPlayer
         {
             if (SongsListBox.Items.Count != 0)
             {
-                if (mediaPlayer.Position.TotalSeconds > 3)
+                if (shuffle == 0)
                 {
-                    Start_Again();
-                }
-                else
-                {
-                    if (isPlaying != 0)
+                    if (mediaPlayer.Position.TotalSeconds > 3)
                     {
-                        if (playing == 0)
-                        {
-                            Start_Again();
-                        }
-                        else
-                        {
-                            playing--;
-                            SongsListBox.SelectedIndex = playing;
-                            mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
-                            Start();
-                        }
+                        Start_Again();
                     }
                     else
                     {
-                        if (SongsListBox.SelectedIndex == -1 || SongsListBox.SelectedIndex == 0)
+                        if (isPlaying != 0)
                         {
-                            First_Index();
-                            Start();
+                            if (playing == 0)
+                            {
+                                playing = SongsListBox.Items.Count - 1;
+                                SongsListBox.SelectedIndex = SongsListBox.Items.Count - 1;
+                                mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.Items.Count - 1].ToString()));
+                                Start();
+                            }
+                            else
+                            {
+                                playing--;
+                                SongsListBox.SelectedIndex = playing;
+                                mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
+                                Start();
+                            }
                         }
                         else
                         {
-                            SongsListBox.SelectedIndex--;
-                            playing = SongsListBox.SelectedIndex;
-                            mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
-                            Start();
+                            if (SongsListBox.SelectedIndex == -1 || SongsListBox.SelectedIndex == 0)
+                            {
+                                First_Index();
+                                Start();
+                            }
+                            else
+                            {
+                                SongsListBox.SelectedIndex--;
+                                playing = SongsListBox.SelectedIndex;
+                                mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
+                                Start();
+                            }
                         }
                     }
+                }
+                else
+                {
+                    Random_Song();
                 }
             }
         }
@@ -175,33 +185,40 @@ namespace AudioPlayer
         {
             if (SongsListBox.Items.Count != 0)
             {
-                if (isPlaying != 0)
+                if (shuffle == 0)
                 {
-                    if (playing != SongsListBox.Items.Count - 1)
+                    if (isPlaying != 0)
                     {
-                        Next_Song();
-                        Start();
+                        if (playing != SongsListBox.Items.Count - 1)
+                        {
+                            Next_Song();
+                            Start();
+                        }
+                        else
+                        {
+                            First_Index();
+                            Start();
+                        }
                     }
                     else
                     {
-                        First_Index();
-                        Start();
+                        if (SongsListBox.SelectedIndex != SongsListBox.Items.Count - 1)
+                        {
+                            SongsListBox.SelectedIndex++;
+                            playing = SongsListBox.SelectedIndex;
+                            mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
+                            Start();
+                        }
+                        else
+                        {
+                            First_Index();
+                            Start();
+                        }
                     }
                 }
                 else
                 {
-                    if (SongsListBox.SelectedIndex != SongsListBox.Items.Count - 1)
-                    {
-                        SongsListBox.SelectedIndex++;
-                        playing = SongsListBox.SelectedIndex;
-                        mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
-                        Start();
-                    }
-                    else
-                    {
-                        First_Index();
-                        Start();
-                    }
+                    Random_Song();
                 }
             }
         }
@@ -523,29 +540,7 @@ namespace AudioPlayer
                         }
                         else
                         {
-                            if (SongsListBox.Items.Count == 1)
-                            {
-                                Start_Again();
-                            }
-                            else
-                            {
-                                do
-                                {
-                                    shuffleSelection = r.Next(0, SongsListBox.Items.Count);
-                                    if (shuffleSelection != playing)
-                                    {
-                                        shuffleFound = 1;
-                                        playing = shuffleSelection;
-                                        SongsListBox.SelectedIndex = playing;
-                                        mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
-                                        Start();
-                                    }
-                                    else
-                                    {
-                                        shuffleFound = 0;
-                                    }
-                                } while (shuffleFound == 0);
-                            }
+                            Random_Song();
                         }
                     }
                     else
@@ -598,6 +593,7 @@ namespace AudioPlayer
             PositionSlider.Value = 0;
             PositionSlider.Maximum = 1;
             PositionSlider.IsEnabled = false;
+            BalanceSlider.Value = 0;
             PositionLabel.Content = "00:00/00:00";
             IsPlayingLabel.Content = "Stopped";
             PlayPauseButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF12B900");
@@ -619,6 +615,33 @@ namespace AudioPlayer
             playing++;
             SongsListBox.SelectedIndex = playing;
             mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
+        }
+
+        private void Random_Song()
+        {
+            if (SongsListBox.Items.Count == 1)
+            {
+                Start_Again();
+            }
+            else
+            {
+                do
+                {
+                    shuffleSelection = r.Next(0, SongsListBox.Items.Count);
+                    if (shuffleSelection != playing)
+                    {
+                        shuffleFound = 1;
+                        playing = shuffleSelection;
+                        SongsListBox.SelectedIndex = playing;
+                        mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
+                        Start();
+                    }
+                    else
+                    {
+                        shuffleFound = 0;
+                    }
+                } while (shuffleFound == 0);
+            }
         }
 
         private void Load()
