@@ -352,7 +352,7 @@ namespace AudioPlayer
         {
             if (SongsListBox.Items.Count != 0)
             {
-                MessageBoxResult mbr = MessageBox.Show("This will clear your current playlist. Are you sure? If you would like to first save your playlist, click \"No\", then click \"Save Playlist...\".", "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
+                MessageBoxResult mbr = MessageWindow.Show("Are you sure?", "This will clear your current playlist. Are you sure? If you would like to first save your playlist, click \"No\", then click \"Save Playlist...\".", MessageBoxButton.YesNo, MessageWindow.MessageBoxImage.Warning);
                 if (mbr == MessageBoxResult.Yes)
                 {
                     SongsListBox.Items.Clear();
@@ -361,7 +361,7 @@ namespace AudioPlayer
             }
             else
             {
-                MessageBox.Show("Your playlist is empty.", "Empty playlist", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageWindow.Show("Empty playlist", "Your playlist is empty.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
             }
         }
 
@@ -369,13 +369,13 @@ namespace AudioPlayer
         {
             if (SongsListBox.Items.Count == 0)
             {
-                MessageBox.Show("There are no items to be removed.", "Empty playlist", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageWindow.Show("Empty playlist", "There are no items to be removed.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
             }
             else
             {
                 if (SongsListBox.SelectedIndex == -1)
                 {
-                    MessageBox.Show("Please select a song from the playlist first.", "Select a song first", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageWindow.Show("Select a song first", "Please select a song from the playlist first.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
                 }
                 else
                 {
@@ -406,7 +406,7 @@ namespace AudioPlayer
         {
             if (SongsListBox.Items.Count == 0)
             {
-                MessageBox.Show("You cannot save an empty playlist.", "Empty Playlist", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageWindow.Show("Empty Playlist", "You cannot save an empty playlist.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
             }
             else
             {
@@ -424,7 +424,7 @@ namespace AudioPlayer
                         sw.WriteLine(SongsListBox.Items[i].ToString());
                     }
                     sw.Close();
-                    MessageBox.Show("Your playlist has been successfully saved.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageWindow.Show("Success", "Your playlist has been successfully saved.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
                 }
                 catch
                 {
@@ -450,7 +450,7 @@ namespace AudioPlayer
                 }
                 if (SongsListBox.Items.Count != 0)
                 {
-                    MessageBoxResult mbr = MessageBox.Show("Opening a saved playlist will clear your current playlist. Are you sure you want to open your saved playlist? If you would like to first save your playlist, click \"No\", then click \"Save Playlist...\".", "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Exclamation);
+                    MessageBoxResult mbr = MessageWindow.Show("Are you sure?", "Opening a saved playlist will clear your current playlist. Are you sure you want to open your saved playlist? If you would like to first save your playlist, click \"No\", then click \"Save Playlist...\".", MessageBoxButton.YesNo, MessageWindow.MessageBoxImage.Warning);
                     if (mbr == MessageBoxResult.Yes)
                     {
                         SongsListBox.Items.Clear();
@@ -465,7 +465,7 @@ namespace AudioPlayer
             }
             catch (Error)
             {
-                MessageBox.Show("An unexpected error occured. Please check that the loaded file was made with this application, then try again.", "Fatal error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageWindow.Show("Fatal error", "An unexpected error occured. Please check that the loaded file was made with this application, then try again.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Error);
             }
             catch
             {
@@ -498,7 +498,7 @@ namespace AudioPlayer
 
         private void Media_Failed(object sender, EventArgs e)
         {
-            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageWindow.Show("An error occured", "The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Error);
             Stop();
         }
 

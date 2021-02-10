@@ -342,7 +342,7 @@ namespace AudioPlayer
 
         private void Media_Failed(object sender, EventArgs e)
         {
-            MessageBox.Show("The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageWindow.Show("An error occured", "The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Error);
             Stop();
         }
 
