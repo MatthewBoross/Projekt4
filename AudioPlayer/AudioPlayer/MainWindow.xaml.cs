@@ -240,7 +240,15 @@ namespace AudioPlayer
                         }
                         else
                         {
-                            Random_Song();
+                            if (SongsListBox.Items.Count == 1)
+                            {
+                                First_Index();
+                                Start();
+                            }
+                            else
+                            {
+                                Random_Song();
+                            }
                         }
                     }
                 }
@@ -284,7 +292,15 @@ namespace AudioPlayer
                 }
                 else
                 {
-                    Random_Song();
+                    if (SongsListBox.Items.Count == 1)
+                    {
+                        First_Index();
+                        Start();
+                    }
+                    else
+                    {
+                        Random_Song();
+                    }
                 }
             }
         }
