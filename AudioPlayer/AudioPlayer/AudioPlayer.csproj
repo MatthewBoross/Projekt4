@@ -160,9 +160,10 @@
     <Resource Include="note.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="error.png" />
+    <Resource Include="Error.png" />
     <Resource Include="Information.png" />
-    <Resource Include="Question.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="Warning.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,7 +18,7 @@ namespace AudioPlayer
         public readonly DispatcherTimer timer = new DispatcherTimer();
         StreamReader sr;
         public readonly Random r = new Random();
-        public int positionSliderIsMoving = 0, isPlaying = 0, playing = -1, repeatType = 0, shuffle = 0, shuffleSelection = 0, shuffleFound = 0;
+        public int positionSliderIsMoving = 0, isPlaying = 0, playing = -1, repeatType = 0, shuffle = 0, shuffleSelection = 0, shuffleFound = 0, saveSuccess = 0;
 
         class Error : Exception
         {
@@ -30,7 +31,36 @@ namespace AudioPlayer
         public MainWindow()
         {
             InitializeComponent();
+            try
+            {
+                sr = new StreamReader("./autoconfig_do_not_delete.txt");
+                string ok = sr.ReadLine();
+                if (ok != "Audio Player version 1.0. Below is your automatic config.")
+                {
+                    throw new Error();
+                }
+                VolumeSlider.Value = Convert.ToDouble(sr.ReadLine());
+                VolumeLabel.Content = Math.Round(VolumeSlider.Value * 100) + "%";
+                mediaPlayer.Volume = VolumeSlider.Value;
+                BalanceSlider.Value = Convert.ToDouble(sr.ReadLine());
+                mediaPlayer.Balance = BalanceSlider.Value;
+                while (!sr.EndOfStream)
+                {
+                    SongsListBox.Items.Add(sr.ReadLine());
+                }
+                sr.Close();
+                sr.Dispose();
+            }
+            catch (Error)
+            {
+
+            }
+            catch
+            {
+
+            }
             mediaPlayer.MediaEnded += new EventHandler(Media_Ended);
+            Closing += new CancelEventHandler(MainWindow_Closing);
         }
 
         private void InfoButton_Click(object sender, RoutedEventArgs e)
@@ -41,52 +71,59 @@ namespace AudioPlayer
 
         private void MiniPlayerButton_Click(object sender, RoutedEventArgs e)
         {
-            MiniPlayer mp = new MiniPlayer();
-            for (int i = 0; i < SongsListBox.Items.Count; i++)
+            if (SongsListBox.Items.Count != 0)
             {
-                mp.SongsListBox.Items.Add(SongsListBox.Items[i]);
-            }
-            mp.playing = playing;
-            mp.SongsListBox.SelectedIndex = SongsListBox.SelectedIndex;
-            mp.isPlaying = isPlaying;
-            mp.timer.Interval = timer.Interval;
-            mp.timer.Tick += mp.Timer_Tick;
-            mp.timer.Start();
-            mp.PositionSlider.Value = PositionSlider.Value;
-            mp.PositionSlider.Maximum = PositionSlider.Maximum;
-            mp.PositionSlider.IsEnabled = PositionSlider.IsEnabled;
-            mp.PositionLabel.Content = PositionLabel.Content;
-            mp.VolumeSlider.Value = VolumeSlider.Value;
-            mp.VolumeLabel.Content = VolumeLabel.Content;
-            mp.mediaPlayer.Volume = VolumeSlider.Value;
-            mp.mediaPlayer.Balance = mediaPlayer.Balance;
-            mp.PlayPauseButton.Background = PlayPauseButton.Background;
-            mp.StopButton.Background = StopButton.Background;
-            mp.RepeatButton.Background = RepeatButton.Background;
-            mp.RepeatButton.Content = RepeatButton.Content;
-            mp.repeatType = repeatType;
-            mp.ShuffleButton.Background = ShuffleButton.Background;
-            mp.shuffle = shuffle;
-            try
-            {
-                mp.mediaPlayer.Open(new Uri(SongsListBox.Items[playing].ToString()));
-                mp.Show();
-                if (mp.isPlaying == 2)
+                MiniPlayer mp = new MiniPlayer();
+                for (int i = 0; i < SongsListBox.Items.Count; i++)
                 {
-                    mp.mediaPlayer.Play();
+                    mp.SongsListBox.Items.Add(SongsListBox.Items[i]);
                 }
-                else if (mp.isPlaying == 1)
+                mp.playing = playing;
+                mp.SongsListBox.SelectedIndex = SongsListBox.SelectedIndex;
+                mp.isPlaying = isPlaying;
+                mp.timer.Interval = timer.Interval;
+                mp.timer.Tick += mp.Timer_Tick;
+                mp.timer.Start();
+                mp.PositionSlider.Value = PositionSlider.Value;
+                mp.PositionSlider.Maximum = PositionSlider.Maximum;
+                mp.PositionSlider.IsEnabled = PositionSlider.IsEnabled;
+                mp.PositionLabel.Content = PositionLabel.Content;
+                mp.VolumeSlider.Value = VolumeSlider.Value;
+                mp.VolumeLabel.Content = VolumeLabel.Content;
+                mp.mediaPlayer.Volume = VolumeSlider.Value;
+                mp.mediaPlayer.Balance = mediaPlayer.Balance;
+                mp.PlayPauseButton.Background = PlayPauseButton.Background;
+                mp.StopButton.Background = StopButton.Background;
+                mp.RepeatButton.Background = RepeatButton.Background;
+                mp.RepeatButton.Content = RepeatButton.Content;
+                mp.repeatType = repeatType;
+                mp.ShuffleButton.Background = ShuffleButton.Background;
+                mp.shuffle = shuffle;
+                try
                 {
-                    mp.mediaPlayer.Pause();
+                    mp.mediaPlayer.Open(new Uri(SongsListBox.Items[playing].ToString()));
+                    mp.Show();
+                    if (mp.isPlaying == 2)
+                    {
+                        mp.mediaPlayer.Play();
+                    }
+                    else if (mp.isPlaying == 1)
+                    {
+                        mp.mediaPlayer.Pause();
+                    }
+                    mp.mediaPlayer.Position = mediaPlayer.Position;
                 }
-                mp.mediaPlayer.Position = mediaPlayer.Position;
+                catch
+                {
+                    mp.Show();
+                }
+                mediaPlayer.Close();
+                Close();
             }
-            catch
+            else
             {
-                mp.Show();
+                MessageWindow.Show("Empty playlist", "Please add some songs to your playlist first.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
             }
-            mediaPlayer.Close();
-            Close();
         }
 
         private void PlayPauseButton_Click(object sender, RoutedEventArgs e)
@@ -95,15 +132,30 @@ namespace AudioPlayer
             {
                 if (isPlaying == 0)
                 {
-                    if (SongsListBox.SelectedIndex != -1)
+                    if (shuffle == 0)
                     {
-                        Selected_Index();
-                        Start();
+                        if (SongsListBox.SelectedIndex != -1)
+                        {
+                            Selected_Index();
+                            Start();
+                        }
+                        else
+                        {
+                            First_Index();
+                            Start();
+                        }
                     }
                     else
                     {
-                        First_Index();
-                        Start();
+                        if (SongsListBox.SelectedIndex == -1)
+                        {
+                            Random_Song();
+                        }
+                        else
+                        {
+                            Selected_Index();
+                            Start();
+                        }
                     }
                 }
                 else if (isPlaying == 1)
@@ -132,13 +184,13 @@ namespace AudioPlayer
         {
             if (SongsListBox.Items.Count != 0)
             {
-                if (shuffle == 0)
+                if (mediaPlayer.Position.TotalSeconds > 3)
                 {
-                    if (mediaPlayer.Position.TotalSeconds > 3)
-                    {
-                        Start_Again();
-                    }
-                    else
+                    Start_Again();
+                }
+                else
+                {
+                    if (shuffle == 0)
                     {
                         if (isPlaying != 0)
                         {
@@ -159,9 +211,16 @@ namespace AudioPlayer
                         }
                         else
                         {
-                            if (SongsListBox.SelectedIndex == -1 || SongsListBox.SelectedIndex == 0)
+                            if (SongsListBox.SelectedIndex == -1)
                             {
                                 First_Index();
+                                Start();
+                            }
+                            else if (SongsListBox.SelectedIndex == 0)
+                            {
+                                SongsListBox.SelectedIndex = SongsListBox.Items.Count - 1;
+                                playing = SongsListBox.Items.Count - 1;
+                                mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.Items.Count - 1].ToString()));
                                 Start();
                             }
                             else
@@ -173,10 +232,17 @@ namespace AudioPlayer
                             }
                         }
                     }
-                }
-                else
-                {
-                    Random_Song();
+                    else
+                    {
+                        if (mediaPlayer.Position.TotalSeconds > 3)
+                        {
+                            Start_Again();
+                        }
+                        else
+                        {
+                            Random_Song();
+                        }
+                    }
                 }
             }
         }
@@ -348,23 +414,6 @@ namespace AudioPlayer
             }
         }
 
-        private void ClearButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (SongsListBox.Items.Count != 0)
-            {
-                MessageBoxResult mbr = MessageWindow.Show("Are you sure?", "This will clear your current playlist. Are you sure? If you would like to first save your playlist, click \"No\", then click \"Save Playlist...\".", MessageBoxButton.YesNo, MessageWindow.MessageBoxImage.Warning);
-                if (mbr == MessageBoxResult.Yes)
-                {
-                    SongsListBox.Items.Clear();
-                    Stop();
-                }
-            }
-            else
-            {
-                MessageWindow.Show("Empty playlist", "Your playlist is empty.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
-            }
-        }
-
         private void RemoveSongButton_Click(object sender, RoutedEventArgs e)
         {
             if (SongsListBox.Items.Count == 0)
@@ -402,6 +451,36 @@ namespace AudioPlayer
             }
         }
 
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SongsListBox.Items.Count != 0)
+            {
+                MessageBoxResult mbr = MessageWindow.Show("Are you sure?", "This will clear your current playlist. Would you like to save your playlist first?", MessageBoxButton.YesNoCancel, MessageWindow.MessageBoxImage.Warning);
+                if (mbr == MessageBoxResult.Yes)
+                {
+                    Save();
+                    if (saveSuccess == 1)
+                    {
+                        SongsListBox.Items.Clear();
+                        Stop();
+                    }
+                    else
+                    {
+                        MessageWindow.Show("Save failed", "The save has failed. This could mean the save was aborted or the destination file is currently in use. To solve the later problem, you can try creating a new playlist instead of overwriting an existing one. (Your playlist was not cleared.)", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
+                    }
+                }
+                else if (mbr == MessageBoxResult.No)
+                {
+                    SongsListBox.Items.Clear();
+                    Stop();
+                }
+            }
+            else
+            {
+                MessageWindow.Show("Empty playlist", "Your playlist is already empty.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
+            }
+        }
+
         private void SavePlaylistButton_Click(object sender, RoutedEventArgs e)
         {
             if (SongsListBox.Items.Count == 0)
@@ -410,25 +489,10 @@ namespace AudioPlayer
             }
             else
             {
-                try
+                Save();
+                if (saveSuccess == 0)
                 {
-                    SaveFileDialog sf = new SaveFileDialog
-                    {
-                        Filter = "Text files (*.txt)|*.txt"
-                    };
-                    sf.ShowDialog();
-                    StreamWriter sw = new StreamWriter(sf.FileName);
-                    sw.WriteLine("Audio Player version 1.0. Below is your playlist.");
-                    for (int i = 0; i < SongsListBox.Items.Count; i++)
-                    {
-                        sw.WriteLine(SongsListBox.Items[i].ToString());
-                    }
-                    sw.Close();
-                    MessageWindow.Show("Success", "Your playlist has been successfully saved.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
-                }
-                catch
-                {
-
+                    MessageWindow.Show("Save failed", "The save has failed. This could mean the save was aborted or the destination file is currently in use. To solve the later problem, you can try creating a new playlist instead of overwriting an existing one.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
                 }
             }
         }
@@ -450,8 +514,22 @@ namespace AudioPlayer
                 }
                 if (SongsListBox.Items.Count != 0)
                 {
-                    MessageBoxResult mbr = MessageWindow.Show("Are you sure?", "Opening a saved playlist will clear your current playlist. Are you sure you want to open your saved playlist? If you would like to first save your playlist, click \"No\", then click \"Save Playlist...\".", MessageBoxButton.YesNo, MessageWindow.MessageBoxImage.Warning);
+                    MessageBoxResult mbr = MessageWindow.Show("Are you sure?", "Opening a saved playlist will clear your current playlist. Would you like to save your playlist first?", MessageBoxButton.YesNoCancel, MessageWindow.MessageBoxImage.Warning);
                     if (mbr == MessageBoxResult.Yes)
+                    {
+                        Save();
+                        if (saveSuccess == 1)
+                        {
+                            SongsListBox.Items.Clear();
+                            Stop();
+                            Load();
+                        }
+                        else
+                        {
+                            MessageWindow.Show("Save failed", "The save has failed. This could mean the save was aborted or the destination file is currently in use. To solve the later problem, you can try creating a new playlist instead of overwriting an existing one. (Your playlist was not loaded.)", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
+                        }
+                    }
+                    else if (mbr == MessageBoxResult.No)
                     {
                         SongsListBox.Items.Clear();
                         Stop();
@@ -498,7 +576,7 @@ namespace AudioPlayer
 
         private void Media_Failed(object sender, EventArgs e)
         {
-            MessageWindow.Show("An error occured", "The requested audio file could not be opened. Please check if the file's location has been changed or remove this audio file from the list, then readd it to the list.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Error);
+            MessageWindow.Show("An error occured", "The requested audio file could not be opened. Please check if the file's location or name has been changed or remove this audio file from the list, then readd it to the list.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Error);
             Stop();
         }
 
@@ -621,26 +699,79 @@ namespace AudioPlayer
         {
             if (SongsListBox.Items.Count == 1)
             {
-                Start_Again();
+                if (SongsListBox.SelectedIndex == -1)
+                {
+                    First_Index();
+                    Start();
+                }
+                else
+                {
+                    Start_Again();
+                    Start();
+                }
             }
             else
             {
                 do
                 {
                     shuffleSelection = r.Next(0, SongsListBox.Items.Count);
-                    if (shuffleSelection != playing)
+                    if (isPlaying == 0)
                     {
-                        shuffleFound = 1;
-                        playing = shuffleSelection;
-                        SongsListBox.SelectedIndex = playing;
-                        mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
-                        Start();
+                        if (shuffleSelection != SongsListBox.SelectedIndex)
+                        {
+                            shuffleFound = 1;
+                            playing = shuffleSelection;
+                            SongsListBox.SelectedIndex = playing;
+                            mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
+                            Start();
+                        }
+                        else
+                        {
+                            shuffleFound = 0;
+                        }
                     }
                     else
                     {
-                        shuffleFound = 0;
+                        if (shuffleSelection != playing)
+                        {
+                            shuffleFound = 1;
+                            playing = shuffleSelection;
+                            SongsListBox.SelectedIndex = playing;
+                            mediaPlayer.Open(new Uri(SongsListBox.Items[SongsListBox.SelectedIndex].ToString()));
+                            Start();
+                        }
+                        else
+                        {
+                            shuffleFound = 0;
+                        }
                     }
                 } while (shuffleFound == 0);
+            }
+        }
+
+        public void Save()
+        {
+            try
+            {
+                SaveFileDialog sf = new SaveFileDialog
+                {
+                    Filter = "Text files (*.txt)|*.txt"
+                };
+                sf.ShowDialog();
+                StreamWriter sw = new StreamWriter(sf.FileName);
+                sw.WriteLine("Audio Player version 1.0. Below is your playlist.");
+                for (int i = 0; i < SongsListBox.Items.Count; i++)
+                {
+                    sw.WriteLine(SongsListBox.Items[i].ToString());
+                }
+                sw.Close();
+                sw.Dispose();
+                MessageWindow.Show("Success", "Your playlist has been successfully saved.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Information);
+                saveSuccess = 1;
+            }
+            catch
+            {
+                saveSuccess = 0;
             }
         }
 
@@ -650,6 +781,33 @@ namespace AudioPlayer
             {
                 SongsListBox.Items.Add(sr.ReadLine());
             } while (!sr.EndOfStream);
+        }
+
+        private void MainWindow_Closing(object sender, CancelEventArgs e)
+        {
+            StreamWriter sw = new StreamWriter("./autoconfig_do_not_delete.txt");
+            sw.WriteLine("Audio Player version 1.0. Below is your automatic config.");
+            sw.WriteLine(VolumeSlider.Value);
+            if (SongsListBox.Items.Count > 1)
+            {
+                sw.WriteLine(BalanceSlider.Value);
+                for (int i = 0; i < SongsListBox.Items.Count - 1; i++)
+                {
+                    sw.WriteLine(SongsListBox.Items[i].ToString());
+                }
+                sw.Write(SongsListBox.Items[SongsListBox.Items.Count - 1].ToString());
+            }
+            else if (SongsListBox.Items.Count == 1)
+            {
+                sw.WriteLine(BalanceSlider.Value);
+                sw.Write(SongsListBox.Items[0].ToString());
+            }
+            else
+            {
+                sw.Write(BalanceSlider.Value);
+            }
+            sw.Close();
+            sw.Dispose();
         }
     }
 }

@@ -32,97 +32,52 @@ namespace AudioPlayer
             InitializeComponent();
         }
 
-        static MessageWindow _messageBox;
-        static MessageBoxResult _result = MessageBoxResult.No;
-
-        public static MessageBoxResult Show(string caption, string msg, MessageBoxType type)
-        {
-            switch (type)
-            {
-                case MessageBoxType.ConfirmationWithYesNo:
-                    {
-                        return Show(caption, msg, MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    }
-                case MessageBoxType.Information:
-                    {
-                        return Show(caption, msg, MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                case MessageBoxType.Error:
-                    {
-                        return Show(caption, msg, MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                case MessageBoxType.Warning:
-                    {
-                        return Show(caption, msg, MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                default:
-                    {
-                        return MessageBoxResult.No;
-                    }
-            }
-        }
-
-        public static MessageBoxResult Show(string msg, MessageBoxType type)
-        {
-            return Show(string.Empty, msg, type);
-        }
-
-        public static MessageBoxResult Show(string msg)
-        {
-            return Show(string.Empty, msg, MessageBoxButton.OK, MessageBoxImage.None);
-        }
-
-        public static MessageBoxResult Show(string caption, string text)
-        {
-            return Show(caption, text, MessageBoxButton.OK, MessageBoxImage.None);
-        }
-
-        public static MessageBoxResult Show(string caption, string text, MessageBoxButton button)
-        {
-            return Show(caption, text, button, MessageBoxImage.None);
-        }
+        static MessageWindow messageBox;
+        static MessageBoxResult result = MessageBoxResult.No;
 
         public static MessageBoxResult Show (string caption, string text, MessageBoxButton button, MessageBoxImage image)
         {
-            _messageBox = new MessageWindow
+            messageBox = new MessageWindow
             {
-                txtMsg = { Text = text }, MessageTitle = { Text = caption }
+                Message = { Text = text },
+                MessageTitle = { Text = caption }
             };
             SetVisibilityOfButtons(button);
             SetImageOfMessageBox(image);
-            _messageBox.ShowDialog();
-            return _result;
+            messageBox.ShowDialog();
+            return result;
         }
+
         private static void SetVisibilityOfButtons(MessageBoxButton button)
         {
             switch (button)
             {
                 case MessageBoxButton.OK:
                     {
-                        _messageBox.btnCancel.Visibility = Visibility.Collapsed;
-                        _messageBox.btnNo.Visibility = Visibility.Collapsed;
-                        _messageBox.btnYes.Visibility = Visibility.Collapsed;
-                        _messageBox.btnOk.Focus();
+                        messageBox.CancelButton.Visibility = Visibility.Collapsed;
+                        messageBox.NoButton.Visibility = Visibility.Collapsed;
+                        messageBox.YesButton.Visibility = Visibility.Collapsed;
+                        messageBox.OKButton.Focus();
                         break;
                     }
                 case MessageBoxButton.OKCancel:
                     {
-                        _messageBox.btnNo.Visibility = Visibility.Collapsed;
-                        _messageBox.btnYes.Visibility = Visibility.Collapsed;
-                        _messageBox.btnCancel.Focus();
+                        messageBox.NoButton.Visibility = Visibility.Collapsed;
+                        messageBox.YesButton.Visibility = Visibility.Collapsed;
+                        messageBox.CancelButton.Focus();
                         break;
                     }
                 case MessageBoxButton.YesNo:
                     {
-                        _messageBox.btnOk.Visibility = Visibility.Collapsed;
-                        _messageBox.btnCancel.Visibility = Visibility.Collapsed;
-                        _messageBox.btnNo.Focus();
+                        messageBox.OKButton.Visibility = Visibility.Collapsed;
+                        messageBox.CancelButton.Visibility = Visibility.Collapsed;
+                        messageBox.NoButton.Focus();
                         break;
                     }
                 case MessageBoxButton.YesNoCancel:
                     {
-                        _messageBox.btnOk.Visibility = Visibility.Collapsed;
-                        _messageBox.btnCancel.Focus();
+                        messageBox.OKButton.Visibility = Visibility.Collapsed;
+                        messageBox.CancelButton.Focus();
                         break;
                     }
                 default:
@@ -138,27 +93,22 @@ namespace AudioPlayer
             {
                 case MessageBoxImage.Warning:
                     {
-                        _messageBox.SetImage("Warning.png");
-                        break;
-                    }
-                case MessageBoxImage.Question:
-                    {
-                        _messageBox.SetImage("Question.png");
+                        messageBox.SetImage("Warning.png");
                         break;
                     }
                 case MessageBoxImage.Information:
                     {
-                        _messageBox.SetImage("Information.png");
+                        messageBox.SetImage("Information.png");
                         break;
                     }
                 case MessageBoxImage.Error:
                     {
-                        _messageBox.SetImage("Error.png");
+                        messageBox.SetImage("Error.png");
                         break;
                     }
                 default:
                     {
-                        _messageBox.img.Visibility = Visibility.Collapsed;
+                        messageBox.Image.Visibility = Visibility.Collapsed;
                         break;
                     }
             }
@@ -166,35 +116,35 @@ namespace AudioPlayer
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (sender == btnOk)
+            if (sender == OKButton)
             {
-                _result = MessageBoxResult.OK;
+                result = MessageBoxResult.OK;
             }
-            else if (sender == btnYes)
+            else if (sender == YesButton)
             {
-                _result = MessageBoxResult.Yes;
+                result = MessageBoxResult.Yes;
             }
-            else if (sender == btnNo)
+            else if (sender == NoButton)
             {
-                _result = MessageBoxResult.No;
+                result = MessageBoxResult.No;
             }
-            else if (sender == btnCancel)
+            else if (sender == CancelButton)
             {
-                _result = MessageBoxResult.Cancel;
+                result = MessageBoxResult.Cancel;
             }
             else
             {
-                _result = MessageBoxResult.None;
+                result = MessageBoxResult.None;
             }
-            _messageBox.Close();
-            _messageBox = null;
+            messageBox.Close();
+            messageBox = null;
         }
 
         private void SetImage(string imageName)
         {
             string uri = string.Format("./{0}", imageName);
             var uriSource = new Uri(uri, UriKind.RelativeOrAbsolute);
-            img.Source = new BitmapImage(uriSource);
+            Image.Source = new BitmapImage(uriSource);
         }
     }
 }

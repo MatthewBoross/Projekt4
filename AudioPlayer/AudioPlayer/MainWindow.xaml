@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Audio Player" Height="560" Width="800" ResizeMode="CanMinimize" Background="#FF323232" Icon="mainIcon.png">
+        Title="Audio Player" Height="560" Width="800" ResizeMode="CanMinimize" Background="#FF323232" Icon="mainIcon.png" Closing="MainWindow_Closing">
     <Grid>
         <Label Content="Audio Player" HorizontalAlignment="Left" Margin="30,30,0,0" VerticalAlignment="Top" Height="50" Width="190" FontSize="30" Foreground="White"/>
         <Button x:Name="InfoButton" Content="ℹ️" HorizontalAlignment="Left" Margin="225,35,0,0" VerticalAlignment="Top" Width="30" Height="30" Background="#FF6800FF" Foreground="White" FontSize="16" Click="InfoButton_Click"/>

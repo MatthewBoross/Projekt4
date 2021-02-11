@@ -8,6 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("note.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("conf.txt")]
 
 

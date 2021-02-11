@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Mini Player" Height="245" Width="245" Background="#FF323232" ResizeMode="CanMinimize" Icon="mainIcon.png">
+        Title="Mini Player" Height="245" Width="245" Background="#FF323232" ResizeMode="CanMinimize" Icon="mainIcon.png" Closing="MiniPlayer_Closing">
     <Grid>
         <ListBox x:Name="SongsListBox" HorizontalAlignment="Left" Height="206" VerticalAlignment="Top" Width="224" Background="#FF646464" Foreground="White" Visibility="Hidden"/>
         <Button x:Name="InfoButton" Content="ℹ️" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="20" Height="20" Background="#FF6800FF" Foreground="White" Click="InfoButton_Click"/>
