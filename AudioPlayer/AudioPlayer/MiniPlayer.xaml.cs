@@ -180,9 +180,10 @@ namespace AudioPlayer
                     }
                     else
                     {
-                        if (mediaPlayer.Position.TotalSeconds > 3)
+                        if (SongsListBox.Items.Count == 1)
                         {
-                            Start_Again();
+                            First_Index();
+                            Start();
                         }
                         else
                         {
@@ -277,7 +278,15 @@ namespace AudioPlayer
                 }
                 else
                 {
-                    Random_Song();
+                    if (SongsListBox.Items.Count == 1)
+                    {
+                        First_Index();
+                        Start();
+                    }
+                    else
+                    {
+                        Random_Song();
+                    }
                 }
             }
         }
@@ -346,7 +355,7 @@ namespace AudioPlayer
         private void VolumeSlider_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
             mediaPlayer.Volume = VolumeSlider.Value;
-            VolumeLabel.Content = Math.Round(VolumeSlider.Value * 100, 0) + "%";
+            VolumeLabel.Content = Math.Round(VolumeSlider.Value * 100) + "%";
         }
 
         public void Timer_Tick(object sender, EventArgs e)
@@ -374,7 +383,8 @@ namespace AudioPlayer
 
         private void Media_Failed(object sender, EventArgs e)
         {
-            MessageWindow.Show("An error occured", "The requested audio file could not be opened. Please check if the file's location or name has been changed.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Error);
+            string file = "The requested audio file (" + SongsListBox.SelectedItem + ") could not be opened. Please check if the file's location or name has been changed.";
+            MessageWindow.Show("An error occured", file, MessageBoxButton.OK, MessageWindow.MessageBoxImage.Error);
             Stop();
         }
 

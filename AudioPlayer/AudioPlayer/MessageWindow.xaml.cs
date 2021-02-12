@@ -35,7 +35,7 @@ namespace AudioPlayer
         static MessageWindow messageBox;
         static MessageBoxResult result = MessageBoxResult.No;
 
-        public static MessageBoxResult Show (string caption, string text, MessageBoxButton button, MessageBoxImage image)
+        public static MessageBoxResult Show(string caption, string text, MessageBoxButton button, MessageBoxImage image)
         {
             messageBox = new MessageWindow
             {
@@ -58,20 +58,6 @@ namespace AudioPlayer
                         messageBox.NoButton.Visibility = Visibility.Collapsed;
                         messageBox.YesButton.Visibility = Visibility.Collapsed;
                         messageBox.OKButton.Focus();
-                        break;
-                    }
-                case MessageBoxButton.OKCancel:
-                    {
-                        messageBox.NoButton.Visibility = Visibility.Collapsed;
-                        messageBox.YesButton.Visibility = Visibility.Collapsed;
-                        messageBox.CancelButton.Focus();
-                        break;
-                    }
-                case MessageBoxButton.YesNo:
-                    {
-                        messageBox.OKButton.Visibility = Visibility.Collapsed;
-                        messageBox.CancelButton.Visibility = Visibility.Collapsed;
-                        messageBox.NoButton.Focus();
                         break;
                     }
                 case MessageBoxButton.YesNoCancel:

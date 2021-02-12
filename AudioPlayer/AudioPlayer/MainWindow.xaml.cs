@@ -35,7 +35,7 @@ namespace AudioPlayer
             {
                 sr = new StreamReader("./autoconfig_do_not_delete.txt");
                 string ok = sr.ReadLine();
-                if (ok != "Audio Player version 1.0. Below is your automatic config.")
+                if (ok != "Audio Player version 1.0. Below is your automatic config. DO NOT DELETE THIS FILE!")
                 {
                     throw new Error();
                 }
@@ -234,21 +234,14 @@ namespace AudioPlayer
                     }
                     else
                     {
-                        if (mediaPlayer.Position.TotalSeconds > 3)
+                        if (SongsListBox.Items.Count == 1)
                         {
-                            Start_Again();
+                            First_Index();
+                            Start();
                         }
                         else
                         {
-                            if (SongsListBox.Items.Count == 1)
-                            {
-                                First_Index();
-                                Start();
-                            }
-                            else
-                            {
-                                Random_Song();
-                            }
+                            Random_Song();
                         }
                     }
                 }
@@ -592,7 +585,8 @@ namespace AudioPlayer
 
         private void Media_Failed(object sender, EventArgs e)
         {
-            MessageWindow.Show("An error occured", "The requested audio file could not be opened. Please check if the file's location or name has been changed or remove this audio file from the list, then readd it to the list.", MessageBoxButton.OK, MessageWindow.MessageBoxImage.Error);
+            string file = "The requested audio file (" + SongsListBox.SelectedItem + ") could not be opened. Please check if the file's location or name has been changed or remove this audio file from the list, then readd it to the list.";
+            MessageWindow.Show("An error occured", file, MessageBoxButton.OK, MessageWindow.MessageBoxImage.Error);
             Stop();
         }
 
@@ -802,7 +796,7 @@ namespace AudioPlayer
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
             StreamWriter sw = new StreamWriter("./autoconfig_do_not_delete.txt");
-            sw.WriteLine("Audio Player version 1.0. Below is your automatic config.");
+            sw.WriteLine("Audio Player version 1.0. Below is your automatic config. DO NOT DELETE THIS FILE!");
             sw.WriteLine(VolumeSlider.Value);
             if (SongsListBox.Items.Count > 1)
             {
