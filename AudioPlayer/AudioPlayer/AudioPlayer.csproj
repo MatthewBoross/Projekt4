@@ -82,7 +82,6 @@
     <Compile Include="MiniPlayer.xaml.cs">
       <DependentUpon>MiniPlayer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TypedEventHandler.cs" />
     <Page Include="Info.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -109,7 +108,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MediaPlayerFailedEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

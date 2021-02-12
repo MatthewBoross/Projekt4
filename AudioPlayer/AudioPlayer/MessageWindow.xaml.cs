@@ -60,6 +60,13 @@ namespace AudioPlayer
                         messageBox.OKButton.Focus();
                         break;
                     }
+                case MessageBoxButton.YesNo:
+                    {
+                        messageBox.CancelButton.Visibility = Visibility.Collapsed;
+                        messageBox.OKButton.Visibility = Visibility.Collapsed;
+                        messageBox.NoButton.Focus();
+                        break;
+                    }
                 case MessageBoxButton.YesNoCancel:
                     {
                         messageBox.OKButton.Visibility = Visibility.Collapsed;

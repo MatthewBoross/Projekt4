@@ -33,9 +33,9 @@ namespace AudioPlayer
             InitializeComponent();
             try
             {
-                sr = new StreamReader("./autoconfig_do_not_delete.txt");
+                sr = new StreamReader("./autoconfig_do_not_delete_or_modify.txt");
                 string ok = sr.ReadLine();
-                if (ok != "Audio Player version 1.0. Below is your automatic config. DO NOT DELETE THIS FILE!")
+                if (ok != "Audio Player version 1.0. Below is your automatic config. DO NOT DELETE OR MODIFY THIS FILE!")
                 {
                     throw new Error();
                 }
@@ -44,10 +44,33 @@ namespace AudioPlayer
                 mediaPlayer.Volume = VolumeSlider.Value;
                 BalanceSlider.Value = Convert.ToDouble(sr.ReadLine());
                 mediaPlayer.Balance = BalanceSlider.Value;
+                int fileRepeat = Convert.ToInt32(sr.ReadLine());
+                if (fileRepeat == 1)
+                {
+                    repeatType = 1;
+                    RepeatButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF6BA1FF");
+                    IsRepeatedLabel.Content = "Repeat All";
+                }
+                else if (fileRepeat == 2)
+                {
+                    repeatType = 2;
+                    RepeatButton.Content = "🔂";
+                    RepeatButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF6BA1FF");
+                    IsRepeatedLabel.Content = "Repeat Single Song";
+                }
+                int fileShuffle = Convert.ToInt32(sr.ReadLine());
+                if (fileShuffle == 1)
+                {
+                    shuffle = 1;
+                    ShuffleButton.Background = (Brush)new BrushConverter().ConvertFrom("#FF6BA1FF");
+                    ShuffleLabel.Content = "Random Shuffle";
+                }
+                int fileSelectedIndex = Convert.ToInt32(sr.ReadLine());
                 while (!sr.EndOfStream)
                 {
                     SongsListBox.Items.Add(sr.ReadLine());
                 }
+                SongsListBox.SelectedIndex = fileSelectedIndex;
                 sr.Close();
                 sr.Dispose();
             }
@@ -558,6 +581,10 @@ namespace AudioPlayer
             {
 
             }
+            finally
+            {
+                sr.Dispose();
+            }
         }
 
         public void Timer_Tick(object sender, EventArgs e)
@@ -791,33 +818,43 @@ namespace AudioPlayer
             {
                 SongsListBox.Items.Add(sr.ReadLine());
             } while (!sr.EndOfStream);
+            sr.Dispose();
         }
 
         private void MainWindow_Closing(object sender, CancelEventArgs e)
         {
-            StreamWriter sw = new StreamWriter("./autoconfig_do_not_delete.txt");
-            sw.WriteLine("Audio Player version 1.0. Below is your automatic config. DO NOT DELETE THIS FILE!");
-            sw.WriteLine(VolumeSlider.Value);
-            if (SongsListBox.Items.Count > 1)
+            try
             {
-                sw.WriteLine(BalanceSlider.Value);
-                for (int i = 0; i < SongsListBox.Items.Count - 1; i++)
+                StreamWriter sw = new StreamWriter("./autoconfig_do_not_delete_or_modify.txt");
+                sw.WriteLine("Audio Player version 1.0. Below is your automatic config. DO NOT DELETE OR MODIFY THIS FILE!");
+                sw.WriteLine(mediaPlayer.Volume);
+                sw.WriteLine(mediaPlayer.Balance);
+                sw.WriteLine(repeatType);
+                sw.WriteLine(shuffle);
+                if (SongsListBox.Items.Count > 0)
                 {
-                    sw.WriteLine(SongsListBox.Items[i].ToString());
+                    sw.WriteLine(SongsListBox.SelectedIndex);
+                    for (int i = 0; i < SongsListBox.Items.Count - 1; i++)
+                    {
+                        sw.WriteLine(SongsListBox.Items[i].ToString());
+                    }
+                    sw.Write(SongsListBox.Items[SongsListBox.Items.Count - 1].ToString());
                 }
-                sw.Write(SongsListBox.Items[SongsListBox.Items.Count - 1].ToString());
+                else
+                {
+                    sw.Write("-1");
+                }
+                sw.Close();
+                sw.Dispose();
             }
-            else if (SongsListBox.Items.Count == 1)
+            catch
             {
-                sw.WriteLine(BalanceSlider.Value);
-                sw.Write(SongsListBox.Items[0].ToString());
+                MessageBoxResult mbr = MessageWindow.Show("Automatic config failed", "The automatic configuration write failed. This could mean the file is under use. Please close all applications that are using the file them try again. Would you like to close the window anyway?", MessageBoxButton.YesNo, MessageWindow.MessageBoxImage.Error);
+                if (mbr == MessageBoxResult.No)
+                {
+                    e.Cancel = true;
+                }
             }
-            else
-            {
-                sw.Write(BalanceSlider.Value);
-            }
-            sw.Close();
-            sw.Dispose();
         }
     }
 }

@@ -556,29 +556,38 @@ namespace AudioPlayer
 
         private void MiniPlayer_Closing(object sender, CancelEventArgs e)
         {
-            StreamWriter sw = new StreamWriter("./autoconfig_do_not_delete.txt");
-            sw.WriteLine("Audio Player version 1.0. Below is your automatic config.");
-            sw.WriteLine(VolumeSlider.Value);
-            if (SongsListBox.Items.Count > 1)
+            try
             {
+                StreamWriter sw = new StreamWriter("./autoconfig_do_not_delete_or_modify.txt");
+                sw.WriteLine("Audio Player version 1.0. Below is your automatic config. DO NOT DELETE OR MODIFY THIS FILE!");
+                sw.WriteLine(mediaPlayer.Volume);
                 sw.WriteLine(mediaPlayer.Balance);
-                for (int i = 0; i < SongsListBox.Items.Count - 1; i++)
+                sw.WriteLine(repeatType);
+                sw.WriteLine(shuffle);
+                if (SongsListBox.Items.Count > 0)
                 {
-                    sw.WriteLine(SongsListBox.Items[i].ToString());
+                    sw.WriteLine(SongsListBox.SelectedIndex);
+                    for (int i = 0; i < SongsListBox.Items.Count - 1; i++)
+                    {
+                        sw.WriteLine(SongsListBox.Items[i].ToString());
+                    }
+                    sw.Write(SongsListBox.Items[SongsListBox.Items.Count - 1].ToString());
                 }
-                sw.Write(SongsListBox.Items[SongsListBox.Items.Count - 1].ToString());
+                else
+                {
+                    sw.Write("-1");
+                }
+                sw.Close();
+                sw.Dispose();
             }
-            else if (SongsListBox.Items.Count == 1)
+            catch
             {
-                sw.WriteLine(mediaPlayer.Balance);
-                sw.Write(SongsListBox.Items[0].ToString());
+                MessageBoxResult mbr = MessageWindow.Show("Automatic config failed", "The automatic configuration write failed. This could mean the file is under use. Please close all applications that are using the file them try again. Would you like to close the window anyway?", MessageBoxButton.YesNo, MessageWindow.MessageBoxImage.Error);
+                if (mbr == MessageBoxResult.No)
+                {
+                    e.Cancel = true;
+                }
             }
-            else
-            {
-                sw.Write(mediaPlayer.Balance);
-            }
-            sw.Close();
-            sw.Dispose();
         }
     }
 }
